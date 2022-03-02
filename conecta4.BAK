@@ -1,0 +1,26 @@
+tablero([[r,r,b],[r,b],[b,r],[r,r,r],[b],[r],[b]]).
+
+
+
+
+
+
+pertenece(X,[X|_]). % --> cuando no quedan elementos en la cola, comprueba que la cabeza y el parámetro que pasamos sean el mismo. Si lo son --> true
+pertenece(X,[_|L]) :- pertenece(X,L).  % --> mientras haya elementos en la cola, sigue llamando a la función recursiva
+
+borrar(X,[X|Y],Y).   %--> devuelve la lista sin X que es la cola.
+borrar(X,[Z|L],[Z|M]):-borrar(X,L,M).  % --> va pasando los elementos de la lista L a M y cuando ve que está el elemento que queremos borrar en la cabeza, lo salta.
+
+insertar(E,L,[E|L]).    % --> Cuando ya solo queda la lista L, añadimos el elemento a la lista donde habíamos pasado todo.
+insertar(E,[X|Y],[X|Z]):- insertar(E,Y,Z). % --> llama cabeza cola cabeza cola hasta que tenemos toda la lista pasada a la lista de salida, añadimos ese elemento
+
+borrarN(1,[_|Y],Y).    % --> cuando N=1 ha llegado a la posición que quiere borrar así que devuelve una lista que contiene solo la cola, quita la cabeza de esa posición.
+borrarN(N, [Z|L], [Z|M]):- N1 is N-1, borrarN(N1,L,M).    %--> va pasando la cabeza de la lista L a la M, decrementa el valor de N y cuando N es 1 quiere decir que ha llegado a la posición que quiere borrar.
+
+elemAtPos(1,[X|_],X).
+elemAtPos(N,[_|L],R):- N1 is N-1, elemAtPos(N1,L,R).
+
+
+
+
+
