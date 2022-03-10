@@ -1,15 +1,30 @@
-tamCol(7).
-tamFila(6).
+tamCol(3).
+tamFila(2).
 
 
 borrar(X,[X|Y],Y).   %--> devuelve la lista sin X que es la cola.
 borrar(X,[Z|L],[Z|M]):-borrar(X,L,M).  % --> va pasando los elementos de la lista L a M y cuando ve que está el elemento que queremos borrar en la cabeza, lo salta.
 
+%COMPROBAR TAMAÑOS
+
+columnaLlena(L):- length(L,LEN), tamFila(LEN), imprimir_msg('La columna está llena').
+imprimir_msg(M):- write(M), nl.
+
+tablero_lleno(TAB, 1, ROWS):- elemAtPos(1, TAB, COLX),             % Comprobamos que las columnas del tablero tengan longitud de fila. Si es así en todas, está lleno.
+                              length(COLX, ROWSX),
+                              (ROWS =:= ROWSX),
+                              imprimir_msg('EMPATE. El tablero está lleno').
+
+tablero_lleno(TAB, COLS, ROWS):- elemAtPos(COLS, TAB, COLX),
+                                 length(COLX, ROWSX),
+                                 (ROWS =:= ROWSX),
+                                 COLS_DEC is COLS-1,
+                                 tablero_lleno(TAB, COLS_DEC, ROWS).
+                                 
+
 %INSERTAR FICHA
 elemAtPos(1,[X|_],X).
 elemAtPos(N,[_|L],R):- N1 is N-1, elemAtPos(N1,L,R).%Devuelve la cola seleccionada
-
-colaLlena(L):- length(L,LEN), tamCol(LEN).
 
 insertar(E,L,[E|L]).    % --> Cuando ya solo queda la lista L, añadimos el elemento a la lista donde habíamos pasado todo.
 insertar(E,[X|Y],[X|Z]):- insertar(E,Y,Z). % --> llama cabeza cola cabeza cola hasta que tenemos toda la lista pasada a la lista de salida, añadimos ese elemento
@@ -24,7 +39,6 @@ elegir_simbolo_e_insertar(TURNO, COL_SELECT, COL_CON_FICHA):- FICHA is TURNO mod
                                                               insertar(FICHA, COL_SELECT, COL_CON_FICHA).
 
 insertar_ficha(TURNO, POS_COL, TAB, TABRES):- elemAtPos(POS_COL, TAB, COL_SELECT),
-                                          not(colaLlena(COL_SELECT)),
                                           elegir_simbolo_e_insertar(TURNO, COL_SELECT, COL_CON_FICHA),
                                           borrarCol(POS_COL, TAB, TABNUEVO),
                                           insertarAtPos(POS_COL, COL_CON_FICHA, TABNUEVO, TABRES). %comprobar_victoria(parametros necesarios), desde alli se llama a jugando o se acaba, de momento aquí para probar
@@ -69,6 +83,8 @@ preguntar_jugadores(J1,J2):- write('Introduzca el nombre del jugador 1'), nl,
 
 preguntar_jugada(L, TURNO, J1, J2, COL, ROW):- write('Introduzca la columna: '),
                                      read(COL_SEL), nl,
+                                     elemAtPos(COL_SEL, L, COL_SELECT),
+                                     not(columnaLlena(COL_SELECT)),
                                      insertar_ficha(TURNO, COL_SEL, L, TABRES),
                                      TURNO_SIG is TURNO+1,
                                      jugando(TURNO_SIG, TABRES, J1, J2, COL, ROW).
@@ -76,6 +92,7 @@ preguntar_jugada(L, TURNO, J1, J2, COL, ROW):- write('Introduzca la columna: '),
 
 jugando(TURNO, L, J1,J2, COL, ROW):- escribir_indices(1,COL),
                            escribir_tablero(L), nl,
+                           not(tablero_lleno(L, COL, ROW)),
                            imprimir_turno(TURNO, J1, J2), nl,
                            preguntar_jugada(L, TURNO, J1,J2,COL, ROW).
 
@@ -91,6 +108,7 @@ jugar(L,ROW,COL,J1,J2):- preguntar_jugadores(J1,J2),
 
 
                            
+
 
 
 
