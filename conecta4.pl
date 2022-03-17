@@ -4,6 +4,7 @@ borrar(X,[Z|L],[Z|M]):-borrar(X,L,M).  % --> va pasando los elementos de la list
 
 %COMPROBAR TAMAÑOS
 
+columnaLlena(L,1):-length(L,LEN), tamCol(LEN).
 columnaLlena(L):- length(L,LEN), tamCol(LEN), imprimir_msg('La columna está llena, prueba otra'). %length(A,B) devuelve la longitud B de la lista A, si concide con el tamaño de columna, llena
 imprimir_msg(M):- writeln(M).
 
@@ -109,6 +110,13 @@ seleccionar_modo_juego(J1,J2,E1,E2):- write('Quieres que la partida sea entre: '
                                  write('3: PC y PC  '), nl,
                                  read(MODO_JUEGO),
                                  definir_jugadores(MODO_JUEGO,J1,J2,E1,E2).
+                                 
+%Pregunta el numero de filas y columnas que quiere para el tablero
+seleccionar_tamano_tablero(ROW,COL):- write('Introduce el numero de filas: '),
+                                      read(ROW), nl,
+                                      write('Introduce el numero de columnas: '),
+                                      read(COL), nl.
+                                      
 
 %Pregunta la jugada al jugador humano y luego se simula la del pc
 preguntar_jugada(TURNO, TAB, J1, J2, 0, 1, COL, ROW):- write('Introduce la columna: '),
@@ -140,9 +148,10 @@ preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW):-
 
 
 simular_jugada_simple(TURNO, TAB, J1, J2, 0,1, COL, ROW):-
-                                               random(0, COL, COL_ALEATORIA),
+                                               COL_MAX is COL+1,
+                                               random(0, COL_MAX, COL_ALEATORIA),
                                                columnaAtPos(COL_ALEATORIA, TAB, COL_SELECT),
-                                               not(columnaLlena(COL_SELECT)),
+                                               not(columnaLlena(COL_SELECT,1)),
                                                insertar_ficha(TURNO, COL_ALEATORIA, TAB, TABRES),
                                                write('Turno simulado'),nl,
                                                imprimir_turno(TURNO, J1, J2), nl,
@@ -156,7 +165,7 @@ simular_jugada_simple(TURNO, TAB, J1, J2, 0,1, COL, ROW):-
 
 
 %Simboliza el turno cuando se ha seleccionado la estrategia (humano vs pc), se imprime el tablero, se pregunta jugada y se simula la jugada del pc
-turno(TURNO, TAB, J1, J2, 0, 1, COL, ROW):-  not(tablero_lleno(TAB,COL,ROW)),
+turno(TURNO, TAB, J1, J2, 0, 1, COL, ROW):-   not(tablero_lleno(TAB,COL,ROW)),
                                               NUMERO_JUGADA is TURNO+1,
                                               write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
                                               imprimir_turno(TURNO, J1, J2), nl,
@@ -173,14 +182,17 @@ turno(TURNO, TAB, J1, J2, E1, E2, COL, ROW):- not(tablero_lleno(TAB, COL, ROW)),
                                            escribir_tablero(TAB), nl,
                                            preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW).
 
+
 %Turno con el tablero lleno, fin del juego
-turno(TURNO, TAB, _, _, _, _, COL, ROW):- tablero_lleno(TAB, COL, ROW),
+turno(TURNO, TAB, _, _, _, _, COL, ROW):-  tablero_lleno(TAB, COL, ROW),
                                            write('El tablero, se ha llenado, el juego ha acabado en EMPATE tras '), write(TURNO), write(' jugadas.'), nl,
                                            write('Otra partida? '), nl.
 
 
 %Establece el juego (jugadores y tablero) y empieza el juego
-jugar(ROW,COL):- seleccionar_modo_juego(J1,J2,E1,E2),
+jugar():- seleccionar_modo_juego(J1,J2,E1,E2),
+                 seleccionar_tamano_tablero(ROW, COL),
+                 %calcular_fichas_ganar IMPLEMENTAR CUANDO SE HAGA LA COMPROBACION DE VICTORIA ****************************************PARA QUE NO SE OLVIDE*********************************
                  assertz(tamCol(ROW)), %El tamaño de una columna es el numero de filas
                  assertz(tamRow(COL)), %El tamaño de una fila es el numero de columnas
                  assertz(numRows(ROW)),
