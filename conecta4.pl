@@ -41,6 +41,14 @@ insertar_ficha(TURNO, POS_COL, TAB, TABRES):- columnaAtPos(POS_COL, TAB, COL_SEL
                                           borrarCol(POS_COL, TAB, TABNUEVO),
                                           insertarAtPos(POS_COL, COL_CON_FICHA, TABNUEVO, TABRES). %comprobar_victoria(parametros necesarios), desde alli se llama a jugando o se acaba, de momento aquí para probar
 
+%Elemento de la posición N de una lista
+%Si no hay nada en esa posicion porque no existe devuelve un espacio
+elem_at_pos(_,[],' ').
+elem_at_pos(1,[X|_],X).
+elem_at_pos(N,[_|L],R):-N1 is N-1,
+                        elem_at_pos(N1,L,R).
+
+
 
 %Generar tablero inicial
 lista_repe(1,X,[X]).
@@ -49,6 +57,23 @@ lista_repe(N,X,[X|L]):- N1 is N-1,
 
 generar_tablero_inicial(L,COL):- lista_repe(COL,[],L).
 
+%Imprimir tablero
+escribir_fila(TAB, ROW, COL, COLS_TAB):- not(COL > COLS_TAB),
+                                         columnaAtPos(COL, TAB, COL_AT_POS),
+                                         elem_at_pos(ROW, COL_AT_POS, ELEM),
+                                         write('|'), write(ELEM),
+                                         COL_SIG is COL+1,
+                                         escribir_fila(TAB, ROW, COL_SIG, COLS_TAB).
+
+%Cuando ya hemos mirado todas las posiciones de una fila
+escribir_fila(_, _, _, _):- write('|'), nl.
+
+%Imprimir tablero desde la fila mas alta hasta la mas baja
+escribir_tablero(TAB, ROW, COL):- (ROW > 0),
+                                  escribir_fila(TAB, ROW, 1, COL),
+                                  ROW_SIG is ROW-1,
+                                  escribir_tablero(TAB, ROW_SIG, COL).
+escribir_tablero(_,_,_):- nl.
 
 %Imprimir tablero
 
@@ -58,10 +83,10 @@ escribir_lista([X|Y]):- write(X), escribir_lista(Y).
 escribir_lista_con_barra([]).
 escribir_lista_con_barra([X|Y]):- write(X), write('|'), escribir_lista_con_barra(Y).
 
-escribir_tablero([]):- lista_repe(15,'-',L1), write(''),
+escribir_tableroM([]):- lista_repe(15,'-',L1), write(''),
                          escribir_lista(L1), nl.
 
-escribir_tablero([X|L]):- lista_repe(15, '-' , L1), write(''),
+escribir_tableroM([X|L]):- lista_repe(15, '-' , L1), write(''),
                           escribir_lista(L1), nl,
                           write('|'), escribir_lista_con_barra(X), nl,
                           escribir_tablero(L).
@@ -156,12 +181,29 @@ simular_jugada_simple(TURNO, TAB, J1, J2, 0,1, COL, ROW):-
                                                write('Turno simulado'),nl,
                                                imprimir_turno(TURNO, J1, J2), nl,
                                                escribir_indices(1,COL),
-                                               escribir_tablero(TABRES), nl,
+                                               escribir_tablero(TABRES, ROW, COL), nl,
                                                TURNO_SIG is TURNO+1,
                                                turno(TURNO_SIG, TABRES, J1, J2, 0, 1, COL, ROW).
 
 simular_jugada_simple(TURNO, TAB, J1, J2, 0,1, COL, ROW):-
                                                simular_jugada_simple(TURNO, TAB, J1, J2, 0, 1, COL, ROW).
+                                               
+simular_jugada_simple(TURNO, TAB, J1, J2, 1,1, COL, ROW):-
+                                               COL_MAX is COL+1,
+                                               random(0, COL_MAX, COL_ALEATORIA),
+                                               columnaAtPos(COL_ALEATORIA, TAB, COL_SELECT),
+                                               not(columnaLlena(COL_SELECT,1)),
+                                               insertar_ficha(TURNO, COL_ALEATORIA, TAB, TABRES),
+                                               write('Turno simulado'),nl,
+                                               imprimir_turno(TURNO, J1, J2), nl,
+                                               escribir_indices(1,COL),
+                                               escribir_tablero(TABRES, ROW, COL), nl,
+                                               TURNO_SIG is TURNO+1,
+                                               turno(TURNO_SIG, TABRES, J1, J2, 1, 1, COL, ROW).
+
+simular_jugada_simple(TURNO, TAB, J1, J2, 1,1, COL, ROW):-
+                                               simular_jugada_simple(TURNO, TAB, J1, J2, 1, 1, COL, ROW).
+
 
 
 %Simboliza el turno cuando se ha seleccionado la estrategia (humano vs pc), se imprime el tablero, se pregunta jugada y se simula la jugada del pc
@@ -170,8 +212,16 @@ turno(TURNO, TAB, J1, J2, 0, 1, COL, ROW):-   not(tablero_lleno(TAB,COL,ROW)),
                                               write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
                                               imprimir_turno(TURNO, J1, J2), nl,
                                               escribir_indices(1,COL),
-                                              escribir_tablero(TAB), nl,
+                                              escribir_tablero(TAB, ROW, COL), nl,
                                               preguntar_jugada(TURNO, TAB, J1, J2, 0,1, COL, ROW).
+                                              
+%Simboliza el turno cuando se ha seleccionado la estrategia (pc vs pc), se imprime el tablero, se pregunta jugada y se simula la jugada del pc
+turno(TURNO, TAB, J1, J2, 1, 1, COL, ROW):-   not(tablero_lleno(TAB,COL,ROW)),
+                                              NUMERO_JUGADA is TURNO+1,
+                                              write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
+                                              simular_jugada_simple(TURNO, TAB, J1, J2, 1,1, COL, ROW).
+                                              
+
 
 %Simboliza el turno de un jugador (humano o PC), se imprime el tablero, se pregunta jugada y se cambia el turno
 turno(TURNO, TAB, J1, J2, E1, E2, COL, ROW):- not(tablero_lleno(TAB, COL, ROW)),
@@ -179,7 +229,7 @@ turno(TURNO, TAB, J1, J2, E1, E2, COL, ROW):- not(tablero_lleno(TAB, COL, ROW)),
                                            write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
                                            imprimir_turno(TURNO, J1, J2), nl,
                                            escribir_indices(1,COL),
-                                           escribir_tablero(TAB), nl,
+                                           escribir_tablero(TAB, ROW, COL), nl,
                                            preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW).
 
 
@@ -202,5 +252,7 @@ jugar():- seleccionar_modo_juego(J1,J2,E1,E2),
                  assertz(estrategia_j1(E1)),
                  assertz(estrategia_j2(E2)),
                  generar_tablero_inicial(TAB, COL),
+                 escribir_indices(1,COL),
+                 escribir_tablero(TAB, ROW,COL),
                  write('Comienza el juego entre '), write(J1), write(' y '), write(J2), nl,
                  turno(0, TAB, J1, J2, E1, E2, COL, ROW). %Turno inicial para el jugador 0
