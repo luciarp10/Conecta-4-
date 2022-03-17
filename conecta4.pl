@@ -59,7 +59,7 @@ escribir_lista_con_barra([X|Y]):- write(X), write('|'), escribir_lista_con_barra
 
 escribir_tablero([]):- lista_repe(15,'-',L1), write(''),
                          escribir_lista(L1), nl.
-                        
+
 escribir_tablero([X|L]):- lista_repe(15, '-' , L1), write(''),
                           escribir_lista(L1), nl,
                           write('|'), escribir_lista_con_barra(X), nl,
@@ -91,7 +91,7 @@ definir_jugadores(2,J1,J2,E1,E2):- write('Introduce el nombre del jugador humano
                                   atom_string(J2,'PC Bueno'),
                                   write('Tu PC rival es '), write(J2), nl,
                                   definir_estrategia_PC(J2, E2).
-                                  
+
 %Modo 3: PC vs PC: Pregunta por las estrategias de ambos
 definir_jugadores(3,J1,J2,E1,E2):- atom_string(J1,'PC Bueno'),
                                    atom_string(J2,'PC Buenaga'),
@@ -110,7 +110,21 @@ seleccionar_modo_juego(J1,J2,E1,E2):- write('Quieres que la partida sea entre: '
                                  read(MODO_JUEGO),
                                  definir_jugadores(MODO_JUEGO,J1,J2,E1,E2).
 
+%Pregunta la jugada al jugador humano y luego se simula la del pc
+preguntar_jugada(TURNO, TAB, J1, J2, 0, 1, COL, ROW):- write('Introduce la columna: '),
+                                               read(NUM_COL), nl,
+                                               columnaAtPos(NUM_COL, TAB, COL_SELECT),
+                                               not(columnaLlena(COL_SELECT)),
+                                               insertar_ficha(TURNO, NUM_COL, TAB, TABRES),
+                                               TURNO_SIG is TURNO+1,
+                                               simular_jugada_simple(TURNO_SIG, TABRES, J1, J2, 0,1, COL, ROW).
+
+preguntar_jugada(TURNO, TAB, J1, J2, 0, 1, COL, ROW):-
+                                               preguntar_jugada(TURNO, TAB, J1, J2, 0, 1, COL, ROW).
                                                
+                                               
+
+
 %Se pregunta la jugada de un jugador, y la columna no esta llena, por lo que inserta la ficha y cambia el turno al otro
 preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW):- write('Introduce la columna: '),
                                                read(NUM_COL), nl,
@@ -119,14 +133,37 @@ preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW):- write('Introduce la col
                                                insertar_ficha(TURNO, NUM_COL, TAB, TABRES),
                                                TURNO_SIG is TURNO+1,
                                                turno(TURNO_SIG, TABRES, J1, J2, E1, E2, COL, ROW).
-                                               
+
 %Predicado de jugada con la columna llena, se vuelve a preguntar la jugada otra vez
-preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW):- write('Introduce la columna: '),
-                                               read(NUM_COL), nl,
-                                               columnaAtPos(NUM_COL, TAB, COL_SELECT),
-                                               columnaLlena(COL_SELECT),
+preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW):-
                                                preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW).
-                                           
+
+
+simular_jugada_simple(TURNO, TAB, J1, J2, 0,1, COL, ROW):-
+                                               random(0, COL, COL_ALEATORIA),
+                                               columnaAtPos(COL_ALEATORIA, TAB, COL_SELECT),
+                                               not(columnaLlena(COL_SELECT)),
+                                               insertar_ficha(TURNO, COL_ALEATORIA, TAB, TABRES),
+                                               write('Turno simulado'),nl,
+                                               imprimir_turno(TURNO, J1, J2), nl,
+                                               escribir_indices(1,COL),
+                                               escribir_tablero(TABRES), nl,
+                                               TURNO_SIG is TURNO+1,
+                                               turno(TURNO_SIG, TABRES, J1, J2, 0, 1, COL, ROW).
+
+simular_jugada_simple(TURNO, TAB, J1, J2, 0,1, COL, ROW):-
+                                               simular_jugada_simple(TURNO, TAB, J1, J2, 0, 1, COL, ROW).
+
+
+%Simboliza el turno cuando se ha seleccionado la estrategia (humano vs pc), se imprime el tablero, se pregunta jugada y se simula la jugada del pc
+turno(TURNO, TAB, J1, J2, 0, 1, COL, ROW):-  not(tablero_lleno(TAB,COL,ROW)),
+                                              NUMERO_JUGADA is TURNO+1,
+                                              write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
+                                              imprimir_turno(TURNO, J1, J2), nl,
+                                              escribir_indices(1,COL),
+                                              escribir_tablero(TAB), nl,
+                                              preguntar_jugada(TURNO, TAB, J1, J2, 0,1, COL, ROW).
+
 %Simboliza el turno de un jugador (humano o PC), se imprime el tablero, se pregunta jugada y se cambia el turno
 turno(TURNO, TAB, J1, J2, E1, E2, COL, ROW):- not(tablero_lleno(TAB, COL, ROW)),
                                            NUMERO_JUGADA is TURNO + 1,
@@ -135,12 +172,12 @@ turno(TURNO, TAB, J1, J2, E1, E2, COL, ROW):- not(tablero_lleno(TAB, COL, ROW)),
                                            escribir_indices(1,COL),
                                            escribir_tablero(TAB), nl,
                                            preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW).
-                                           
+
 %Turno con el tablero lleno, fin del juego
 turno(TURNO, TAB, _, _, _, _, COL, ROW):- tablero_lleno(TAB, COL, ROW),
                                            write('El tablero, se ha llenado, el juego ha acabado en EMPATE tras '), write(TURNO), write(' jugadas.'), nl,
                                            write('Otra partida? '), nl.
-                                           
+
 
 %Establece el juego (jugadores y tablero) y empieza el juego
 jugar(ROW,COL):- seleccionar_modo_juego(J1,J2,E1,E2),
