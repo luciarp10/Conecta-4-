@@ -4,7 +4,7 @@ borrar(X,[Z|L],[Z|M]):-borrar(X,L,M).  % --> va pasando los elementos de la list
 
 %COMPROBAR TAMAÑOS
 
-columnaLlena(L,1):-length(L,LEN), tamCol(LEN).
+columnaLlena(L,1):-length(L,LEN), tamCol(LEN). %Columna llena que no imprime (para PC)
 columnaLlena(L):- length(L,LEN), tamCol(LEN), imprimir_msg('La columna está llena, prueba otra'). %length(A,B) devuelve la longitud B de la lista A, si concide con el tamaño de columna, llena
 imprimir_msg(M):- writeln(M).
 
@@ -21,25 +21,25 @@ tablero_lleno(TAB, COLS, ROWS):- columnaAtPos(COLS, TAB, COLX),
 
 %INSERTAR FICHA
 
-columnaAtPos(1,[X|_],X).
-columnaAtPos(N,[_|L],R):- N1 is N-1, columnaAtPos(N1,L,R).%Devuelve la columna seleccionada
+columnaAtPos(1,[X|_],X).  %La correcta, cuando ya se ha iterado COL_SEL veces, está en la cabeza
+columnaAtPos(COL_SEL,[_|L],RES):- COL_SIG is COL_SEL-1, columnaAtPos(COL_SIG,L,RES).%La columna se alcanza al iterar COL_SEL veces el tablero
 
-insertar(E,L,[E|L]).    % --> Cuando ya solo queda la lista L, añadimos el elemento a la lista donde habíamos pasado todo.
-insertar(E,[X|Y],[X|Z]):- insertar(E,Y,Z). % --> llama cabeza cola cabeza cola hasta que tenemos toda la lista pasada a la lista de salida, añadimos ese elemento
+insertar_ficha(FICHA,L,[FICHA|L]).    % --> Cuando ya solo queda la lista L, añadimos el elemento a la lista donde habíamos pasado todo.
+insertar_ficha(FICHA,[X|Y],[X|Z]):- insertar(FICHA,Y,Z). % --> llama cabeza cola cabeza cola hasta que tenemos toda la lista pasada a la lista de salida, añadimos ese elemento
 
 borrarCol(1, [_|Y], Y).
 borrarCol(N, [Z|L], [Z|M]):- N1 is N-1, borrarCol(N1, L, M).
 
-insertarAtPos(1, E, L, [E|L]).
-insertarAtPos(N, E, [X|L], [X|T]):- N1 is N-1, insertarAtPos(N1, E, L, T).
+insertar_columna(1, COL_NUEVA, L, [COL_NUEVA|L]). %Inserta la columa en la posicion dada
+insertar_columna(N, COL_NUEVA, [X|L], [X|T]):- N1 is N-1, insertar_columna(N1, COL_NUEVA, L, T). %Va avanzando hasta que consigue poner la columna y vuelve recursivamente, incluyendo las columnas saltadas
 
 elegir_simbolo_e_insertar(TURNO, COL_SELECT, COL_CON_FICHA):- FICHA is TURNO mod 2,
-                                                              insertar(FICHA, COL_SELECT, COL_CON_FICHA).
+                                                              insertar_ficha(FICHA, COL_SELECT, COL_CON_FICHA).
 
 insertar_ficha(TURNO, POS_COL, TAB, TABRES):- columnaAtPos(POS_COL, TAB, COL_SELECT),
                                           elegir_simbolo_e_insertar(TURNO, COL_SELECT, COL_CON_FICHA),
                                           borrarCol(POS_COL, TAB, TABNUEVO),
-                                          insertarAtPos(POS_COL, COL_CON_FICHA, TABNUEVO, TABRES). %comprobar_victoria(parametros necesarios), desde alli se llama a jugando o se acaba, de momento aquí para probar
+                                          insertar_columna(POS_COL, COL_CON_FICHA, TABNUEVO, TABRES). %comprobar_victoria(parametros necesarios), desde alli se llama a jugando o se acaba, de momento aquí para probar
 
 %Elemento de la posición N de una lista
 %Si no hay nada en esa posicion porque no existe devuelve un espacio
@@ -135,44 +135,32 @@ seleccionar_modo_juego(J1,J2,E1,E2):- write('Quieres que la partida sea entre: '
                                  write('3: PC y PC  '), nl,
                                  read(MODO_JUEGO),
                                  definir_jugadores(MODO_JUEGO,J1,J2,E1,E2).
-                                 
+
 %Pregunta el numero de filas y columnas que quiere para el tablero
-seleccionar_tamano_tablero(ROW,COL):- write('Introduce el numero de filas: '),
+seleccionar_tamano_tablero(ROW,COL,CONECTA_X):- write('Introduce el numero de filas: '),
                                       read(ROW), nl,
                                       write('Introduce el numero de columnas: '),
-                                      read(COL), nl.
-                                      
-
-%Pregunta la jugada al jugador humano y luego se simula la del pc
-preguntar_jugada(TURNO, TAB, J1, J2, 0, 1, COL, ROW):- write('Introduce la columna: '),
-                                               read(NUM_COL), nl,
-                                               columnaAtPos(NUM_COL, TAB, COL_SELECT),
-                                               not(columnaLlena(COL_SELECT)),
-                                               insertar_ficha(TURNO, NUM_COL, TAB, TABRES),
-                                               TURNO_SIG is TURNO+1,
-                                               simular_jugada_simple(TURNO_SIG, TABRES, J1, J2, 0,1, COL, ROW).
-
-preguntar_jugada(TURNO, TAB, J1, J2, 0, 1, COL, ROW):-
-                                               preguntar_jugada(TURNO, TAB, J1, J2, 0, 1, COL, ROW).
-                                               
-                                               
+                                      read(COL), nl,
+                                      CONECTA_X is ROW * COL // 10,
+                                      write('Para ganar hacen falta '), write(CONECTA_X), write(' fichas seguidas'), nl.
 
 
 %Se pregunta la jugada de un jugador, y la columna no esta llena, por lo que inserta la ficha y cambia el turno al otro
-preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW):- write('Introduce la columna: '),
+preguntar_jugada(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
+                                               write('Introduce la columna: '),
                                                read(NUM_COL), nl,
                                                columnaAtPos(NUM_COL, TAB, COL_SELECT),
                                                not(columnaLlena(COL_SELECT)),
                                                insertar_ficha(TURNO, NUM_COL, TAB, TABRES),
                                                TURNO_SIG is TURNO+1,
-                                               turno(TURNO_SIG, TABRES, J1, J2, E1, E2, COL, ROW).
+                                               turno(TURNO_SIG, TABRES, J1, J2, EAUX, E, COL, ROW, CONECTA_X). %Intercambio de E y EAUX (la primera es la del jugador que esta jugando)
 
 %Predicado de jugada con la columna llena, se vuelve a preguntar la jugada otra vez
-preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW):-
-                                               preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW).
+preguntar_jugada(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
+                                               preguntar_jugada(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X).
 
 
-simular_jugada_simple(TURNO, TAB, J1, J2, 0,1, COL, ROW):-
+simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
                                                COL_MAX is COL+1,
                                                random(0, COL_MAX, COL_ALEATORIA),
                                                columnaAtPos(COL_ALEATORIA, TAB, COL_SELECT),
@@ -183,12 +171,12 @@ simular_jugada_simple(TURNO, TAB, J1, J2, 0,1, COL, ROW):-
                                                escribir_indices(1,COL),
                                                escribir_tablero(TABRES, ROW, COL), nl,
                                                TURNO_SIG is TURNO+1,
-                                               turno(TURNO_SIG, TABRES, J1, J2, 0, 1, COL, ROW).
+                                               turno(TURNO_SIG, TABRES, J1, J2, EAUX, E, COL, ROW, CONECTA_X). %Intercambio de E y EAUX (la primera es la del jugador que esta jugando)
 
-simular_jugada_simple(TURNO, TAB, J1, J2, 0,1, COL, ROW):-
-                                               simular_jugada_simple(TURNO, TAB, J1, J2, 0, 1, COL, ROW).
+simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
+                                               simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X).
                                                
-simular_jugada_simple(TURNO, TAB, J1, J2, 1,1, COL, ROW):-
+simular_jugada_avanzada(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
                                                COL_MAX is COL+1,
                                                random(0, COL_MAX, COL_ALEATORIA),
                                                columnaAtPos(COL_ALEATORIA, TAB, COL_SELECT),
@@ -199,49 +187,44 @@ simular_jugada_simple(TURNO, TAB, J1, J2, 1,1, COL, ROW):-
                                                escribir_indices(1,COL),
                                                escribir_tablero(TABRES, ROW, COL), nl,
                                                TURNO_SIG is TURNO+1,
-                                               turno(TURNO_SIG, TABRES, J1, J2, 1, 1, COL, ROW).
+                                               turno(TURNO_SIG, TABRES, J1, J2, EAUX, E, COL, ROW, CONECTA_X). %Intercambio de E y EAUX (la primera es la del jugador que esta jugando)
 
-simular_jugada_simple(TURNO, TAB, J1, J2, 1,1, COL, ROW):-
-                                               simular_jugada_simple(TURNO, TAB, J1, J2, 1, 1, COL, ROW).
-
-
-
-%Simboliza el turno cuando se ha seleccionado la estrategia (humano vs pc), se imprime el tablero, se pregunta jugada y se simula la jugada del pc
-turno(TURNO, TAB, J1, J2, 0, 1, COL, ROW):-   not(tablero_lleno(TAB,COL,ROW)),
-                                              NUMERO_JUGADA is TURNO+1,
-                                              write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
-                                              imprimir_turno(TURNO, J1, J2), nl,
-                                              escribir_indices(1,COL),
-                                              escribir_tablero(TAB, ROW, COL), nl,
-                                              preguntar_jugada(TURNO, TAB, J1, J2, 0,1, COL, ROW).
-                                              
-%Simboliza el turno cuando se ha seleccionado la estrategia (pc vs pc), se imprime el tablero, se pregunta jugada y se simula la jugada del pc
-turno(TURNO, TAB, J1, J2, 1, 1, COL, ROW):-   not(tablero_lleno(TAB,COL,ROW)),
-                                              NUMERO_JUGADA is TURNO+1,
-                                              write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
-                                              simular_jugada_simple(TURNO, TAB, J1, J2, 1,1, COL, ROW).
-                                              
+simular_jugada_avanzada(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
+                                               simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X).
 
 
-%Simboliza el turno de un jugador (humano o PC), se imprime el tablero, se pregunta jugada y se cambia el turno
-turno(TURNO, TAB, J1, J2, E1, E2, COL, ROW):- not(tablero_lleno(TAB, COL, ROW)),
-                                           NUMERO_JUGADA is TURNO + 1,
-                                           write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
-                                           imprimir_turno(TURNO, J1, J2), nl,
-                                           escribir_indices(1,COL),
-                                           escribir_tablero(TAB, ROW, COL), nl,
-                                           preguntar_jugada(TURNO, TAB, J1, J2, E1, E2, COL, ROW).
+%Simboliza el turno de un humano (E = 0), se imprime el tablero y se pregunta jugada
+turno(TURNO, TAB, J1, J2, 0, EAUX, COL, ROW, CONECTA_X):-   not(tablero_lleno(TAB,COL,ROW)),
+                                                            NUMERO_JUGADA is TURNO+1,
+                                                            write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
+                                                            imprimir_turno(TURNO, J1, J2), nl,
+                                                            escribir_indices(1,COL),
+                                                            escribir_tablero(TAB, ROW, COL), nl,
+                                                            preguntar_jugada(TURNO, TAB, J1, J2, 0, EAUX, COL, ROW, CONECTA_X).
+
+%Simboliza el turno de un PC simple (E = 1), se imprime el tablero y se simula la jugada del pc
+turno(TURNO, TAB, J1, J2, 1, EAUX, COL, ROW, CONECTA_X):-   not(tablero_lleno(TAB,COL,ROW)),
+                                                            NUMERO_JUGADA is TURNO+1,
+                                                            write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
+                                                            simular_jugada_simple(TURNO, TAB, J1, J2, 1, EAUX, COL, ROW, CONECTA_X).
+
+%Simboliza el turno de un PC avanzado (E = 2), se imprime el tablero y se simula la jugada del pc
+turno(TURNO, TAB, J1, J2, 2, EAUX, COL, ROW, CONECTA_X):-   not(tablero_lleno(TAB,COL,ROW)),
+                                                            NUMERO_JUGADA is TURNO+1,
+                                                            write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
+                                                            simular_jugada_avanzada(TURNO, TAB, J1, J2, 2, EAUX, COL, ROW, CONECTA_X).
 
 
 %Turno con el tablero lleno, fin del juego
-turno(TURNO, TAB, _, _, _, _, COL, ROW):-  tablero_lleno(TAB, COL, ROW),
-                                           write('El tablero, se ha llenado, el juego ha acabado en EMPATE tras '), write(TURNO), write(' jugadas.'), nl,
-                                           write('Otra partida? '), nl.
+turno(TURNO, TAB, _, _, _, _, COL, ROW, _):-   tablero_lleno(TAB, COL, ROW),
+                                                       write('El tablero, se ha llenado, el juego ha acabado en EMPATE tras '), write(TURNO), write(' jugadas.'), nl,
+                                                       write('Otra partida?'), nl.
+                                                       
 
 
 %Establece el juego (jugadores y tablero) y empieza el juego
 jugar():- seleccionar_modo_juego(J1,J2,E1,E2),
-                 seleccionar_tamano_tablero(ROW, COL),
+                 seleccionar_tamano_tablero(ROW, COL, CONECTA_X),
                  %calcular_fichas_ganar IMPLEMENTAR CUANDO SE HAGA LA COMPROBACION DE VICTORIA ****************************************PARA QUE NO SE OLVIDE*********************************
                  assertz(tamCol(ROW)), %El tamaño de una columna es el numero de filas
                  assertz(tamRow(COL)), %El tamaño de una fila es el numero de columnas
@@ -255,4 +238,4 @@ jugar():- seleccionar_modo_juego(J1,J2,E1,E2),
                  escribir_indices(1,COL),
                  escribir_tablero(TAB, ROW,COL),
                  write('Comienza el juego entre '), write(J1), write(' y '), write(J2), nl,
-                 turno(0, TAB, J1, J2, E1, E2, COL, ROW). %Turno inicial para el jugador 0
+                 turno(0, TAB, J1, J2, E1, E2, COL, ROW, CONECTA_X). %Turno inicial para el jugador 0
