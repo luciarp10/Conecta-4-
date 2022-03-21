@@ -18,7 +18,6 @@ tablero_lleno(TAB, COLS, ROWS):- columnaAtPos(COLS, TAB, COLX),
                                  COLS_DEC is COLS-1,
                                  tablero_lleno(TAB, COLS_DEC, ROWS).
 
-
 %INSERTAR FICHA
 
 columnaAtPos(1,[X|_],X).  %La correcta, cuando ya se ha iterado COL_SEL veces, está en la cabeza
@@ -93,6 +92,82 @@ escribir_tableroM([X|L]):- lista_repe(15, '-' , L1), write(''),
 
 escribir_indices(NMAX, NMAX):- write(' '), write(NMAX), nl.
 escribir_indices(NMIN, NMAX):- write(' '), write(NMIN), N1 is NMIN+1, escribir_indices(N1, NMAX).
+
+
+%COMPROBACION VICTORIA
+comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, 0):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
+                                                           length(COLUMNA_ACTUAL, ALTURA),
+                                                           elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
+                                                           mirar_abajo(FICHA,COLUMNA_ACTUAL, ALTURA, CONECTA_X, FIN),
+                                                           write('Resultado ABAJO '), write(FIN), nl,
+                                                           partida_terminada_ab(FIN, TAB, COL, ULTIMA_COL, CONECTA_X).
+                                                           
+comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, 1):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
+                                                           length(COLUMNA_ACTUAL, ALTURA),
+                                                           elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
+                                                           contar_izquierda(TAB, ULTIMA_COL, FICHA, ALTURA, 0, CONT_IZQ),
+                                                           contar_derecha(TAB, ULTIMA_COL, COL, FICHA, ALTURA,0,CONT_DER),
+                                                           SUM is CONT_IZQ+CONT_DER+1,   %+1 POR LA QUE ACABAS DE METER
+                                                           RES is CONECTA_X-SUM,
+                                                           write('Resultado LATERAL '), write(RES), nl,
+                                                           partida_terminada_lat(RES,TAB, COL, ULTIMA_COL, CONECTA_X).
+                                                           
+comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, 2). %para las diagonale
+
+                                                           
+mirar_abajo(_,_,_,1,FIN):- FIN is 0.
+mirar_abajo(FICHA, COLUMNA_ACTUAL, ALTURA, CONECTAR, FIN):- ALTURA_SIGUIENTE is ALTURA-1,
+                                                            elem_at_pos(ALTURA_SIGUIENTE, COLUMNA_ACTUAL, FICHA),
+                                                            CONECTAR_SIG is CONECTAR-1,
+                                                            mirar_abajo(FICHA, COLUMNA_ACTUAL, ALTURA_SIGUIENTE, CONECTAR_SIG, FIN).
+mirar_abajo(_,_,_,_,FIN):- FIN is 1.
+
+
+contar_izquierda(_,1,_,_,INI, CONT):- CONT is INI.
+contar_izquierda(TAB, ULTIMA_COL, FICHA, ALTURA,INI, CONT):-  COL_IZQ is ULTIMA_COL-1,
+                                                              columnaAtPos(COL_IZQ, TAB, FICHAS_COL_IZQ),
+                                                              elem_at_pos(ALTURA, FICHAS_COL_IZQ, FICHA),
+                                                              INI1 is INI+1,
+                                                              contar_izquierda(TAB, COL_IZQ, FICHA, ALTURA, INI1, CONT).
+
+contar_izquierda(_,_,_,_,INI,CONT):- CONT is INI.
+
+
+contar_derecha(TAB, ULTIMA_COL, COL, FICHA, ALTURA,INI, CONT):-  COL_DER is ULTIMA_COL+1,
+                                                              COL_DER=<COL,
+                                                              columnaAtPos(COL_DER, TAB, FICHAS_COL_DER),
+                                                              elem_at_pos(ALTURA, FICHAS_COL_DER, FICHA),
+                                                              INI1 is INI+1,
+                                                              contar_derecha(TAB, COL_DER, COL, FICHA, ALTURA, INI1, CONT).
+contar_derecha(_,_,_,_,_,INI, CONT):- CONT is INI.
+
+                                                           
+                                                           
+
+
+partida_terminada_ab(FIN,_,_,_,_):-  FIN==0,
+                          write('VICTORIA! Partida finalizada').
+partida_terminada_ab(_,TAB, COL, ULTIMA_COL, CONECTA_X):- comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X,1).
+
+partida_terminada_lat(FIN,_,_,_,_):-  FIN=<0,
+                                      write('VICTORIA! Partida finalizada').
+partida_terminada_lat(_,TAB, COL, ULTIMA_COL, CONECTA_X):- comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X,2).
+
+partida_terminada_diag(FIN,_,_,_,_):-  FIN=<0,
+                                       write('VICTORIA! Partida finalizada').
+partida_terminada_diag(_,_,_,_,_). %Se acaba la comprobación sin victoria
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 %JUEGO
