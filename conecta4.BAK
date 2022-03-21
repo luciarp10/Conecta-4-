@@ -112,7 +112,20 @@ comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, 1):-   columnaAtPos(ULTIMA_C
                                                            write('Resultado LATERAL '), write(RES), nl,
                                                            partida_terminada_lat(RES,TAB, COL, ULTIMA_COL, CONECTA_X).
                                                            
-comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, 2). %para las diagonale
+comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, 2):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
+                                                           length(COLUMNA_ACTUAL, ALTURA),
+                                                           elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
+                                                           contar_diag_arriba_izq(TAB, ULTIMA_COL, FICHA, ALTURA, 0, CONT_ARI),
+                                                           contar_diag_arriba_der(TAB, ULTIMA_COL, COL, FICHA, ALTURA, 0, CONT_ARD),
+                                                           contar_diag_abajo_izq(TAB, ULTIMA_COL, FICHA, ALTURA, 0, CONT_ABI),
+                                                           contar_diag_abajo_der(TAB, ULTIMA_COL, COL, FICHA, ALTURA, 0, CONT_ABD),
+                                                           SUM_DIAG_1 is CONT_ARI+CONT_ABD+1,
+                                                           SUM_DIAG_2 is CONT_ARD+CONT_ABI+1,
+                                                           RES_DIAG1 is CONECTA_X-SUM_DIAG_1,
+                                                           RES_DIAG2 is CONECTA_X-SUM_DIAG_2,
+                                                           RES is min(RES_DIAG1, RES_DIAG2),
+                                                           write(RES), nl,
+                                                           partida_terminada_diag(RES,TAB, COL, ULTIMA_COL, CONECTA_X).
 
                                                            
 mirar_abajo(_,_,_,1,FIN):- FIN is 0.
@@ -138,8 +151,44 @@ contar_derecha(TAB, ULTIMA_COL, COL, FICHA, ALTURA,INI, CONT):-  COL_DER is ULTI
                                                               columnaAtPos(COL_DER, TAB, FICHAS_COL_DER),
                                                               elem_at_pos(ALTURA, FICHAS_COL_DER, FICHA),
                                                               INI1 is INI+1,
-                                                              contar_izquierda(TAB, COL_DER, COL, FICHA, ALTURA, INI1, CONT).
+                                                              contar_derecha(TAB, COL_DER, COL, FICHA, ALTURA, INI1, CONT).
 contar_derecha(_,_,_,_,_,INI, CONT):- CONT is INI.
+
+contar_diag_arriba_izq(_,1,_,_,INI,CONT_ARI):- CONT_ARI is INI.
+contar_diag_arriba_izq(TAB, ULTIMA_COL, FICHA, ALTURA, INI, CONT_ARI):- COL_IZQ is ULTIMA_COL-1,
+                                                                        columnaAtPos(COL_IZQ, TAB, FICHAS_COL_IZQ),
+                                                                        ALTURA1 is ALTURA+1,
+                                                                        length(FICHAS_COL_IZQ, ALTURA_COL_IZQ),
+                                                                        ALTURA1=<ALTURA_COL_IZQ,
+                                                                        elem_at_pos(ALTURA1, FICHAS_COL_IZQ, FICHA),
+                                                                        INI1 is INI+1,
+                                                                        contar_diag_arriba_izq(TAB, COL_IZQ, FICHA, ALTURA, INI1, CONT_ARI).
+contar_diag_arriba_izq(_,_,_,_,INI,CONT_ARI):- CONT_ARI is INI.
+
+
+contar_diag_arriba_der(TAB, ULTIMA_COL, COL, FICHA, ALTURA, INI, CONT_ARD):- COL_DER is ULTIMA_COL+1,
+                                                                        COL_DER=<COL,
+                                                                        columnaAtPos(COL_DER, TAB, FICHAS_COL_DER),
+                                                                        ALTURA1 is ALTURA+1,
+                                                                        length(FICHAS_COL_DER, ALTURA_COL_DER),
+                                                                        ALTURA1=<ALTURA_COL_DER,
+                                                                        elem_at_pos(ALTURA1, FICHAS_COL_DER, FICHA),
+                                                                        INI1 is INI+1,
+                                                                        contar_diag_arriba_der(TAB, COL_DER, COL, FICHA, ALTURA, INI1, CONT_ARD).
+contar_diag_arriba_der(_,_,_,_,_,INI,CONT_ARD):- CONT_ARD is INI.
+
+contar_diag_abajo_izq(_,1,_,_,INI,CONT_ABI):- CONT_ABI is INI.
+contar_diag_abajo_izq(TAB, ULTIMA_COL, FICHA, ALTURA, INI, CONT_ABI):-  COL_IZQ is ULTIMA_COL-1,
+                                                                        columnaAtPos(COL_IZQ, TAB, FICHAS_COL_IZQ),
+                                                                        ALTURA1 is ALTURA-1,
+                                                                        length(FICHAS_COL_IZQ, ALTURA_COL_IZQ),
+                                                                        ALTURA1=<ALTURA_COL_IZQ,
+                                                                        ALTURA1>0,
+                                                                        elem_at_pos(ALTURA1, FICHAS_COL_IZQ, FICHA),
+                                                                        INI1 is INI+1,
+                                                                        contar_diag_abajo_izq(TAB, COL_IZQ, FICHA, ALTURA, INI1, CONT_ABI).
+contar_diag_abajo_izq(_,_,_,_,INI,CONT_ABI):- CONT_ABI is INI.
+
 
                                                            
                                                            
