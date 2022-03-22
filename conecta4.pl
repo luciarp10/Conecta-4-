@@ -1,4 +1,3 @@
-
 borrar(X,[X|Y],Y).   %--> devuelve la lista sin X que es la cola.
 borrar(X,[Z|L],[Z|M]):-borrar(X,L,M).  % --> va pasando los elementos de la lista L a M y cuando ve que está el elemento que queremos borrar en la cabeza, lo salta.
 
@@ -90,40 +89,69 @@ escribir_indices(NMIN, NMAX):- write(' '), write(NMIN), N1 is NMIN+1, escribir_i
 
 %COMPROBACION VICTORIA
 %Primero se comprueba que haya X iguales en la misma columna
-comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, 0):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
-                                                           length(COLUMNA_ACTUAL, ALTURA),
-                                                           elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
-                                                           CONECTAR is CONECTA_X-1,
-                                                           mirar_abajo(FICHA,COLUMNA_ACTUAL, ALTURA, CONECTAR, FIN),
-                                                           write('Resultado ABAJO '), write(FIN), nl,
-                                                           partida_terminada_ab(FIN, TAB, COL, ULTIMA_COL, CONECTA_X).
+comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, TURNO, 0):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
+                                                                   length(COLUMNA_ACTUAL, ALTURA),
+                                                                   elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
+                                                                   mirar_abajo(FICHA,COLUMNA_ACTUAL, ALTURA, CONECTA_X, FIN),  %No puede haber nada arriba
+                                                                   write('Resultado ABAJO '), write(FIN), nl,
+                                                                   partida_terminada_ab(FIN, TAB, COL, ULTIMA_COL, CONECTA_X, TURNO).
 %Se comprueba si hay X iguales en la misma fila
-comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, 1):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
-                                                           length(COLUMNA_ACTUAL, ALTURA),
-                                                           elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
-                                                           contar_izquierda(TAB, ULTIMA_COL, FICHA, ALTURA, 0, CONT_IZQ),
-                                                           contar_derecha(TAB, ULTIMA_COL, COL, FICHA, ALTURA,0,CONT_DER),
-                                                           SUM is CONT_IZQ+CONT_DER+1,   %+1 POR LA QUE ACABAS DE METER
-                                                           RES is CONECTA_X-SUM,
-                                                           write('Resultado LATERAL '), write(RES), nl,
-                                                           partida_terminada_lat(RES,TAB, COL, ULTIMA_COL, CONECTA_X).
+comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, TURNO, 1):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
+                                                                 length(COLUMNA_ACTUAL, ALTURA),
+                                                                 elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
+                                                                 contar_izquierda(TAB, ULTIMA_COL, FICHA, ALTURA, 0, CONT_IZQ),
+                                                                 contar_derecha(TAB, ULTIMA_COL, COL, FICHA, ALTURA,0,CONT_DER),
+                                                                 SUM is CONT_IZQ+CONT_DER+1,   %+1 POR LA QUE ACABAS DE METER
+                                                                 RES is CONECTA_X-SUM,
+                                                                 write('Resultado LATERAL '), write(RES), nl,
+                                                                 partida_terminada_lat(RES,TAB, COL, ULTIMA_COL, CONECTA_X, TURNO).
 %Se comprueba si hay X iguales en las diagonales
-comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, 2):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
-                                                           length(COLUMNA_ACTUAL, ALTURA),
-                                                           elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
-                                                           contar_diag_arriba_izq(TAB, ULTIMA_COL, FICHA, ALTURA, 0, CONT_ARI),
-                                                           contar_diag_arriba_der(TAB, ULTIMA_COL, COL, FICHA, ALTURA, 0, CONT_ARD),
-                                                           contar_diag_abajo_izq(TAB, ULTIMA_COL, FICHA, ALTURA, 0, CONT_ABI),
-                                                           contar_diag_abajo_der(TAB, ULTIMA_COL, COL, FICHA, ALTURA, 0, CONT_ABD),
-                                                           SUM_DIAG_1 is CONT_ARI+CONT_ABD+1,
-                                                           SUM_DIAG_2 is CONT_ARD+CONT_ABI+1,
-                                                           RES_DIAG1 is CONECTA_X-SUM_DIAG_1,
-                                                           RES_DIAG2 is CONECTA_X-SUM_DIAG_2,
-                                                           RES is min(RES_DIAG1, RES_DIAG2),
-                                                           write(RES), nl,
-                                                           partida_terminada_diag(RES,TAB, COL, ULTIMA_COL, CONECTA_X).
+comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, TURNO, 2):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
+                                                                 length(COLUMNA_ACTUAL, ALTURA),
+                                                                 elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
+                                                                 contar_diag_arriba_izq(TAB, ULTIMA_COL, FICHA, ALTURA, 0, CONT_ARI),
+                                                                 contar_diag_arriba_der(TAB, ULTIMA_COL, COL, FICHA, ALTURA, 0, CONT_ARD),
+                                                                 contar_diag_abajo_izq(TAB, ULTIMA_COL, FICHA, ALTURA, 0, CONT_ABI),
+                                                                 contar_diag_abajo_der(TAB, ULTIMA_COL, COL, FICHA, ALTURA, 0, CONT_ABD),
+                                                                 SUM_DIAG_1 is CONT_ARI+CONT_ABD+1,
+                                                                 SUM_DIAG_2 is CONT_ARD+CONT_ABI+1,
+                                                                 RES_DIAG1 is CONECTA_X-SUM_DIAG_1,
+                                                                 RES_DIAG2 is CONECTA_X-SUM_DIAG_2,
+                                                                 RES is min(RES_DIAG1, RES_DIAG2),
+                                                                 write(RES), nl,
+                                                                 partida_terminada_diag(RES,TAB, COL, ULTIMA_COL, CONECTA_X, TURNO).
 
-
+%PARA ESTRATEGIA AVANZADA
+calcular_max_seguidas(TAB, COL_SEL, COL, MAX):-  columnaAtPos(COL_SEL, TAB, COLUMNA_ACTUAL),
+                                            length(COLUMNA_ACTUAL, ALTURA),
+                                            elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
+                                            contar_abajo(FICHA, COLUMNA_ACTUAL, ALTURA, 0, CONT_AB),
+                                            contar_izquierda(TAB, COL_SEL, FICHA, ALTURA, 0, CONT_IZQ),
+                                            contar_derecha(TAB, COL_SEL, COL, FICHA, ALTURA,0, CONT_DER),
+                                            contar_diag_arriba_izq(TAB, COL_SEL, FICHA, ALTURA, 0, CONT_ARI),
+                                            contar_diag_arriba_der(TAB, COL_SEL, COL, FICHA, ALTURA, 0, CONT_ARD),
+                                            contar_diag_abajo_izq(TAB, COL_SEL, FICHA, ALTURA, 0, CONT_ABI),
+                                            contar_diag_abajo_der(TAB, COL_SEL, COL, FICHA, ALTURA, 0, CONT_ABD),
+                                            SUM_AB is CONT_AB+1,
+                                            SUM_LAT is CONT_IZQ+CONT_DER+1,
+                                            write(CONT_IZQ), nl,
+                                            write(CONT_DER), nl,
+                                            SUM_DIAG_1 is CONT_ARI+CONT_ABD+1,
+                                            write(SUM_DIAG_1), nl,
+                                            SUM_DIAG_2 is CONT_ARD+CONT_ABI+1,
+                                            write(SUM_DIAG_2), nl,
+                                            MAX1 is max(SUM_LAT, SUM_AB),
+                                            MAX2 is max(SUM_DIAG_1, SUM_DIAG_2),
+                                            MAX is max(MAX1, MAX2).
+                                            
+contar_abajo(_,_,1,INI,CONT):- CONT is INI.
+contar_abajo(FICHA, COLUMNA_ACTUAL, ALTURA, INI, CONT):- ALTURA_SIGUIENTE is ALTURA-1,
+                                                         elem_at_pos(ALTURA_SIGUIENTE, COLUMNA_ACTUAL, FICHA),
+                                                         INI1 is INI+1,
+                                                         contar_abajo(FICHA, COLUMNA_ACTUAL, ALTURA_SIGUIENTE, INI1, CONT).
+contar_abajo(_,_,_,INI, CONT):- CONT is INI.
+                                            
+                                            
 %Preficados para comprobar la columna
 mirar_abajo(_,_,_,1,FIN):- FIN is 0.
 mirar_abajo(FICHA, COLUMNA_ACTUAL, ALTURA, CONECTAR, FIN):- ALTURA_SIGUIENTE is ALTURA-1,
@@ -201,21 +229,33 @@ contar_diag_abajo_der(TAB, ULTIMA_COL, COL, FICHA, ALTURA, INI, CONT_ABD):- COL_
 contar_diag_abajo_der(_,_,_,_,_,INI,CONT_ABD):- CONT_ABD is INI.
 
 
-                                                           
-                                                           
+es_ganador(TURNO):-
+    JUGADOR is TURNO mod 2,
+    ganador(JUGADOR).
+
+no_ganador(TURNO):-
+    JUGADOR is TURNO mod 2,
+    retract(ganador(JUGADOR)),
+    asserta(ganador(-1)).
 
 %Predicados para comprobar si se cumple alguna de las condiciones anteriores.
-partida_terminada_ab(FIN,_,_,_,_):-  FIN==0,
-                          write('VICTORIA! Partida finalizada').
-partida_terminada_ab(_,TAB, COL, ULTIMA_COL, CONECTA_X):- comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X,1).
+partida_terminada_ab(FIN,_,_,_,_,TURNO):-  FIN==0,
+                           JUGADOR is TURNO mod 2,
+                           retract(ganador(-1)),
+                           asserta(ganador(JUGADOR)).
+partida_terminada_ab(_,TAB, COL, ULTIMA_COL, CONECTA_X,TURNO):- comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, TURNO,1).
 
-partida_terminada_lat(FIN,_,_,_,_):-  FIN=<0,
-                                      write('VICTORIA! Partida finalizada').
-partida_terminada_lat(_,TAB, COL, ULTIMA_COL, CONECTA_X):- comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X,2).
+partida_terminada_lat(FIN,_,_,_,_,TURNO):-  FIN=<0,
+                                      JUGADOR is TURNO mod 2,
+                                      retract(ganador(-1)),
+                                       asserta(ganador(JUGADOR)).
+partida_terminada_lat(_,TAB, COL, ULTIMA_COL, CONECTA_X,TURNO):- comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, TURNO, 2).
 
-partida_terminada_diag(FIN,_,_,_,_):-  FIN=<0,
-                                       write('VICTORIA! Partida finalizada').
-partida_terminada_diag(_,_,_,_,_).
+partida_terminada_diag(FIN,_,_,_,_,TURNO):-  FIN=<0,
+                                       JUGADOR is TURNO mod 2,
+                                       retract(ganador(-1)),
+                                       asserta(ganador(JUGADOR)).
+partida_terminada_diag(_,_,_,_,_,_).
 
 
 
@@ -272,22 +312,29 @@ seleccionar_modo_juego(J1,J2,E1,E2):- write('Quieres que la partida sea entre: '
                                  definir_jugadores(MODO_JUEGO,J1,J2,E1,E2).
 
 %Pregunta el numero de filas y columnas que quiere para el tablero
-seleccionar_tamano_tablero(ROW,COL,CONECTA_X):- write('Introduce el numero de filas: '),
+seleccionar_tamano_tablero(ROW, COL, CONECTA_X):- write('Introduce el numero de filas: '),
                                       read(ROW), nl,
                                       write('Introduce el numero de columnas: '),
                                       read(COL), nl,
-                                      CONECTA_X is ROW * COL // 10,
+                                      DIF is ROW - COL,
+                                      -3 =< DIF, DIF =< 3,
+                                      max(ROW, COL) >= 6,
+                                      CONECTA_X is max(ROW, COL)- 3,
                                       write('Para ganar hacen falta '), write(CONECTA_X), write(' fichas seguidas'), nl.
+
+seleccionar_tamano_tablero(ROW, COL, CONECTA_X):-
+                                      write('No es una proporción válida.'), nl,
+                                      seleccionar_tamano_tablero(ROW, COL, CONECTA_X).
 
 
 %Se pregunta la jugada de un jugador, y la columna no esta llena, por lo que inserta la ficha y cambia el turno al otro
 preguntar_jugada(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
                                                write('Introduce la columna: '),
-                                               read(NUM_COL), nl,
-                                               columnaAtPos(NUM_COL, TAB, COL_SELECT),
+                                               read(COL_INSERT), nl,
+                                               columnaAtPos(COL_INSERT, TAB, COL_SELECT),
                                                not(columnaLlena(COL_SELECT)),
-                                               insertar_ficha(TURNO, NUM_COL, TAB, TABRES),
-                                               comprobar_victoria(TAB, COL, NUM_COL, CONECTA_X, 0),
+                                               insertar_ficha(TURNO, COL_INSERT, TAB, TABRES),
+                                               comprobar_victoria(TABRES, COL, COL_INSERT, CONECTA_X, TURNO, 0),
                                                TURNO_SIG is TURNO+1,
                                                turno(TURNO_SIG, TABRES, J1, J2, EAUX, E, COL, ROW, CONECTA_X). %Intercambio de E y EAUX (la primera es la del jugador que esta jugando)
 
@@ -302,7 +349,7 @@ simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
                                                columnaAtPos(COL_ALEATORIA, TAB, COL_SELECT),
                                                not(columnaLlena(COL_SELECT,1)),
                                                insertar_ficha(TURNO, COL_ALEATORIA, TAB, TABRES),
-                                               comprobar_victoria(TAB, COL, COL_ALEATORIA, CONECTA_X, 0),
+                                               comprobar_victoria(TABRES, COL, COL_ALEATORIA, CONECTA_X, TURNO, 0),
                                                write('Turno simulado'),nl,
                                                imprimir_turno(TURNO, J1, J2), nl,
                                                escribir_indices(1,COL),
@@ -312,27 +359,75 @@ simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
 
 simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
                                                simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X).
-                                               
-simular_jugada_avanzada(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
-                                               COL_MAX is COL+1,
-                                               random(0, COL_MAX, COL_ALEATORIA),
-                                               columnaAtPos(COL_ALEATORIA, TAB, COL_SELECT),
-                                               not(columnaLlena(COL_SELECT,1)),
-                                               insertar_ficha(TURNO, COL_ALEATORIA, TAB, TABRES),
-                                               comprobar_victoria(TAB, COL, COL_ALEATORIA, CONECTA_X, 0),
-                                               write('Turno simulado'),nl,
-                                               imprimir_turno(TURNO, J1, J2), nl,
-                                               escribir_indices(1,COL),
-                                               escribir_tablero(TABRES, ROW, COL), nl,
-                                               TURNO_SIG is TURNO+1,
-                                               turno(TURNO_SIG, TABRES, J1, J2, EAUX, E, COL, ROW, CONECTA_X). %Intercambio de E y EAUX (la primera es la del jugador que esta jugando)
 
-simular_jugada_avanzada(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
-                                               simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X).
+
+%Cuando ya se han comparado todas las alternativas, se inserta en la mejor
+simular_jugada_avanzada(0, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, CONSECUTIVAS):-
+     insertar_ficha(TURNO, MEJOR_COL, TAB, TABRES),
+     write('INSERTADO EN COLUMNA '), write(MEJOR_COL), write(' PERMITE SEGUIDAS '), writeln(CONSECUTIVAS),
+     escribir_indices(1,COL),
+     escribir_tablero(TAB, ROW, COL), nl,
+     TURNO_SIG is TURNO + 1,
+     turno(TURNO_SIG, TABRES, J1, J2, EAUX, E, COL, ROW, CONECTA_X).
+     
+%Cuando se encuentra la posicion ganadora, el jugador gana
+simular_jugada_avanzada(COL_ACTUAL, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, _, _):-
+     columnaAtPos(COL_ACTUAL, TAB, COL_SELECT),
+     not(columnaLlena(COL_SELECT,1)),
+     insertar_ficha(TURNO, COL_ACTUAL, TAB, TAB_PRUEBA),
+     comprobar_victoria(TAB_PRUEBA, COL, COL_ACTUAL, CONECTA_X, TURNO, 0),
+     es_ganador(TURNO),
+     escribir_indices(1,COL),
+     escribir_tablero(TAB, ROW, COL), nl,
+     writeln('HA ENCONTRADO PARA GANAR'), write('EN COLUMNA NUMERO '), writeln(COL_ACTUAL),
+     TURNO_SIG is TURNO + 1,
+     turno(TURNO_SIG, TAB_PRUEBA, J1, J2, EAUX, E, COL, ROW, CONECTA_X).
+
+%Cuando se encuentra que es la posicion ganadora para el rival
+simular_jugada_avanzada(COL_ACTUAL, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR):-
+     columnaAtPos(COL_ACTUAL, TAB, COL_SELECT),
+     not(columnaLlena(COL_SELECT,1)),
+     TURNO_RIVAL is (TURNO + 1) mod 2, %Para que piense que somos el rival
+     insertar_ficha(TURNO_RIVAL, COL_ACTUAL, TAB, TAB_PRUEBA),
+     comprobar_victoria(TAB_PRUEBA, COL, COL_ACTUAL, CONECTA_X, TURNO_RIVAL, 0),
+     es_ganador(TURNO_RIVAL),
+     writeln('HA ENCONTRADO PARA TAPAR JUGADA DEL RIVAL'), write('EN COLUMNA NUMERO '), writeln(COL_ACTUAL),
+     no_ganador(TURNO_RIVAL), %Quitamos que sea ganador, ya que era temporal
+     MEJOR_COL is COL_ACTUAL,
+     MEJOR_VALOR is CONECTA_X, %Maxima prioridad a esta columna, ya que nos haría perder
+     COL_SIG is COL_ACTUAL - 1,
+     simular_jugada_avanzada(COL_SIG, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR).
+
+%Caso general, no se gana ni se pierde, se busca encadenar el numero maximo posible de fichas
+simular_jugada_avanzada(COL_ACTUAL, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR):-
+     columnaAtPos(COL_ACTUAL, TAB, COL_SELECT),
+     not(columnaLlena(COL_SELECT,1)),
+     insertar_ficha(TURNO, COL_ACTUAL, TAB, TAB_PRUEBA),
+     calcular_max_seguidas(TAB_PRUEBA, COL_ACTUAL, COL, CONSECUTIVAS),
+     write('COLUMNA NUMERO '), write(COL_ACTUAL), write(' PERMITE SEGUIDAS '), writeln(CONSECUTIVAS),
+     actualizar_mejor_col(MEJOR_COL, MEJOR_VALOR, COL_ACTUAL, CONSECUTIVAS),
+     COL_SIG is COL_ACTUAL - 1,
+     simular_jugada_avanzada(COL_SIG, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR).
+     
+%Si esa columna esta llena, pasa a la siguiente
+simular_jugada_avanzada(COL_ACTUAL, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR):-
+     columnaAtPos(COL_ACTUAL, TAB, COL_SELECT),
+     columnaLlena(COL_SELECT,1),
+     write('COLUMNA NUMERO '), write(COL_ACTUAL), writeln(' LLENA '),
+     COL_SIG is COL_ACTUAL - 1,
+     simular_jugada_avanzada(COL_SIG, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR).
+     
+actualizar_mejor_col(MEJOR_COL, MEJOR_VALOR, COL_ACTUAL, CONSECUTIVAS):-
+     CONSECUTIVAS > MEJOR_VALOR,
+     MEJOR_COL is COL_ACTUAL,
+     MEJOR_VALOR is CONSECUTIVAS.
+actualizar_mejor_col(_, _, _, _).
+
 
 
 %Simboliza el turno de un humano (E = 0), se imprime el tablero y se pregunta jugada
 turno(TURNO, TAB, J1, J2, 0, EAUX, COL, ROW, CONECTA_X):-   not(tablero_lleno(TAB,COL,ROW)),
+                                                            ganador(-1),
                                                             NUMERO_JUGADA is TURNO+1,
                                                             write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
                                                             imprimir_turno(TURNO, J1, J2), nl,
@@ -342,40 +437,51 @@ turno(TURNO, TAB, J1, J2, 0, EAUX, COL, ROW, CONECTA_X):-   not(tablero_lleno(TA
 
 %Simboliza el turno de un PC simple (E = 1), se imprime el tablero y se simula la jugada del pc
 turno(TURNO, TAB, J1, J2, 1, EAUX, COL, ROW, CONECTA_X):-   not(tablero_lleno(TAB,COL,ROW)),
+                                                            ganador(-1),
                                                             NUMERO_JUGADA is TURNO+1,
                                                             write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
                                                             simular_jugada_simple(TURNO, TAB, J1, J2, 1, EAUX, COL, ROW, CONECTA_X).
 
 %Simboliza el turno de un PC avanzado (E = 2), se imprime el tablero y se simula la jugada del pc
 turno(TURNO, TAB, J1, J2, 2, EAUX, COL, ROW, CONECTA_X):-   not(tablero_lleno(TAB,COL,ROW)),
+                                                            ganador(-1),
                                                             NUMERO_JUGADA is TURNO+1,
                                                             write('Jugada numero '), write(NUMERO_JUGADA), write('. '), nl,
-                                                            simular_jugada_avanzada(TURNO, TAB, J1, J2, 2, EAUX, COL, ROW, CONECTA_X).
+                                                            %La jugada avanzada va a empezar a analizar el tablero de derecha a izquierda y va a insertar en la mejor
+                                                            simular_jugada_avanzada(COL, TURNO, TAB, J1, J2, 2, EAUX, COL, ROW, CONECTA_X, COL, 0).
 
 
 %Turno con el tablero lleno, fin del juego
 turno(TURNO, TAB, _, _, _, _, COL, ROW, _):-   tablero_lleno(TAB, COL, ROW),
+                                                ganador(-1),
                                                        write('El tablero, se ha llenado, el juego ha acabado en EMPATE tras '), write(TURNO), write(' jugadas.'), nl,
                                                        write('Otra partida?'), nl.
 
 %Turno con victoria, fin del juego
-turno(_, _, _, _, _, _, _, _, _):-    write('¡Fin de la partida! Has ganado.').
+turno(_, _, J1, _, _, _, _, _, _):-
+    ganador(0),
+    write('Fin de la partida! Ha ganado '), write(J1).
+
+%Turno con victoria, fin del juego
+turno(_, _, _, J2, _, _, _, _, _):-
+    write('Fin de la partida! Ha ganado '), write(J2).
 
 
 %Establece el juego (jugadores y tablero) y empieza el juego
-jugar():- seleccionar_modo_juego(J1,J2,E1,E2),
-                 seleccionar_tamano_tablero(ROW, COL, CONECTA_X),
-                 %calcular_fichas_ganar IMPLEMENTAR CUANDO SE HAGA LA COMPROBACION DE VICTORIA ****************************************PARA QUE NO SE OLVIDE*********************************
-                 assertz(tamCol(ROW)), %El tamaño de una columna es el numero de filas
-                 assertz(tamRow(COL)), %El tamaño de una fila es el numero de columnas
-                 assertz(numRows(ROW)),
-                 assertz(numCols(COL)),
-                 assertz(nombre_j1(J1)),
-                 assertz(nombre_j2(J2)),
-                 assertz(estrategia_j1(E1)),
-                 assertz(estrategia_j2(E2)),
-                 generar_tablero_inicial(TAB, COL),
-                 escribir_indices(1,COL),
-                 escribir_tablero(TAB, ROW,COL),
-                 write('Comienza el juego entre '), write(J1), write(' y '), write(J2), nl,
-                 turno(0, TAB, J1, J2, E1, E2, COL, ROW, CONECTA_X). %Turno inicial para el jugador 0
+jugar():-
+    seleccionar_modo_juego(J1,J2,E1,E2),
+    seleccionar_tamano_tablero(ROW, COL, CONECTA_X),
+    assertz(tamCol(ROW)), %El tamaño de una columna es el numero de filas
+    assertz(tamRow(COL)), %El tamaño de una fila es el numero de columnas
+    assertz(numRows(ROW)),
+    assertz(numCols(COL)),
+    assertz(nombre_j1(J1)),
+    assertz(nombre_j2(J2)),
+    assertz(estrategia_j1(E1)),
+    assertz(estrategia_j2(E2)),
+    assertz(ganador(-1)),
+    generar_tablero_inicial(TAB, COL),
+    escribir_indices(1,COL),
+    escribir_tablero(TAB, ROW,COL),
+    write('Comienza el juego entre '), write(J1), write(' y '), write(J2), nl,
+    turno(0, TAB, J1, J2, E1, E2, COL, ROW, CONECTA_X). %Turno inicial para el jugador 0
