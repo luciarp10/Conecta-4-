@@ -83,21 +83,6 @@ escribir_tablero(TAB, ROW, COL):- (ROW > 0),
                                   escribir_tablero(TAB, ROW_SIG, COL).
 escribir_tablero(_,_,_):- nl.
 
-%Imprimir tablero
-
-escribir_lista([]).
-escribir_lista([X|Y]):- write(X), escribir_lista(Y).
-
-escribir_lista_con_barra([]).
-escribir_lista_con_barra([X|Y]):- write(X), write('|'), escribir_lista_con_barra(Y).
-
-escribir_tableroM([]):- lista_repe(15,'-',L1), write(''),
-                         escribir_lista(L1), nl.
-
-escribir_tableroM([X|L]):- lista_repe(15, '-' , L1), write(''),
-                          escribir_lista(L1), nl,
-                          write('|'), escribir_lista_con_barra(X), nl,
-                          escribir_tablero(L).
 
 escribir_indices(NMAX, NMAX):- write(' '), write(NMAX), nl.
 escribir_indices(NMIN, NMAX):- write(' '), write(NMIN), N1 is NMIN+1, escribir_indices(N1, NMAX).
