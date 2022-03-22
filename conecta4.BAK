@@ -39,7 +39,8 @@ insertar_columna(N, COL_NUEVA, [X|L], [X|T]):- N1 is N-1, insertar_columna(N1, C
 elegir_simbolo_e_insertar(TURNO, COL_SELECT, COL_CON_FICHA):- FICHA is TURNO mod 2,
                                                               length(COL_SELECT,LEN),
                                                               not(LEN==0),
-                                                              insertarAtPos(LEN, FICHA, COL_SELECT, COL_CON_FICHA).
+                                                              POS is LEN+1,
+                                                              insertarAtPos(POS, FICHA, COL_SELECT, COL_CON_FICHA).
 elegir_simbolo_e_insertar(TURNO, COL_SELECT, COL_CON_FICHA):- FICHA is TURNO mod 2,
                                                               insertar_ficha(FICHA, COL_SELECT, COL_CON_FICHA).
 
@@ -82,21 +83,6 @@ escribir_tablero(TAB, ROW, COL):- (ROW > 0),
                                   escribir_tablero(TAB, ROW_SIG, COL).
 escribir_tablero(_,_,_):- nl.
 
-%Imprimir tablero
-
-escribir_lista([]).
-escribir_lista([X|Y]):- write(X), escribir_lista(Y).
-
-escribir_lista_con_barra([]).
-escribir_lista_con_barra([X|Y]):- write(X), write('|'), escribir_lista_con_barra(Y).
-
-escribir_tableroM([]):- lista_repe(15,'-',L1), write(''),
-                         escribir_lista(L1), nl.
-
-escribir_tableroM([X|L]):- lista_repe(15, '-' , L1), write(''),
-                          escribir_lista(L1), nl,
-                          write('|'), escribir_lista_con_barra(X), nl,
-                          escribir_tablero(L).
 
 escribir_indices(NMAX, NMAX):- write(' '), write(NMAX), nl.
 escribir_indices(NMIN, NMAX):- write(' '), write(NMIN), N1 is NMIN+1, escribir_indices(N1, NMAX).
