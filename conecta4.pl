@@ -93,7 +93,8 @@ escribir_indices(NMIN, NMAX):- write(' '), write(NMIN), N1 is NMIN+1, escribir_i
 comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, 0):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
                                                            length(COLUMNA_ACTUAL, ALTURA),
                                                            elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
-                                                           mirar_abajo(FICHA,COLUMNA_ACTUAL, ALTURA, CONECTA_X, FIN),
+                                                           CONECTAR is CONECTA_X-1,
+                                                           mirar_abajo(FICHA,COLUMNA_ACTUAL, ALTURA, CONECTAR, FIN),
                                                            write('Resultado ABAJO '), write(FIN), nl,
                                                            partida_terminada_ab(FIN, TAB, COL, ULTIMA_COL, CONECTA_X).
 %Se comprueba si hay X iguales en la misma fila
