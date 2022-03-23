@@ -68,23 +68,30 @@ generar_tablero_inicial(L,COL):- lista_repe(COL,[],L).
 escribir_fila(TAB, ROW, COL, COLS_TAB):- not(COL > COLS_TAB),
                                          columnaAtPos(COL, TAB, COL_AT_POS),
                                          elem_at_pos(ROW, COL_AT_POS, ELEM),
-                                         write('|'), write(ELEM),
+                                         write('| '), escribir_ficha(ELEM), write(' '),
                                          COL_SIG is COL+1,
                                          escribir_fila(TAB, ROW, COL_SIG, COLS_TAB).
 
+
 %Cuando ya hemos mirado todas las posiciones de una fila
 escribir_fila(_, _, _, _):- write('|'), nl.
+
+escribir_ficha(0):- put(164).
+escribir_ficha(1):- put(215).
+escribir_ficha(_):- write(' ').
 
 %Imprimir tablero desde la fila mas alta hasta la mas baja
 escribir_tablero(TAB, ROW, COL):- (ROW > 0),
                                   escribir_fila(TAB, ROW, 1, COL),
                                   ROW_SIG is ROW-1,
                                   escribir_tablero(TAB, ROW_SIG, COL).
-escribir_tablero(_,_,_):- nl.
+escribir_tablero(_,_,COL):- write(' '), escribir_base(4 * COL - 1), nl.
 
 
-escribir_indices(NMAX, NMAX):- write(' '), write(NMAX), nl.
-escribir_indices(NMIN, NMAX):- write(' '), write(NMIN), N1 is NMIN+1, escribir_indices(N1, NMAX).
+escribir_indices(NMAX, NMAX):- write('  '), write(NMAX), nl, nl.
+escribir_indices(NMIN, NMAX):- write('  '), write(NMIN), write(' '), N1 is NMIN + 1, escribir_indices(N1, NMAX).
+escribir_base(0):- nl.
+escribir_base(SIZE):- (SIZE > 0), put(175), SIZE_SIG is SIZE-1, escribir_base(SIZE_SIG).
 
 
 %COMPROBACION VICTORIA
@@ -93,7 +100,6 @@ comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, TURNO, 0):-   columnaAtPos(U
                                                                    length(COLUMNA_ACTUAL, ALTURA),
                                                                    elem_at_pos(ALTURA, COLUMNA_ACTUAL, FICHA),
                                                                    mirar_abajo(FICHA,COLUMNA_ACTUAL, ALTURA, CONECTA_X, FIN),  %No puede haber nada arriba
-                                                                   write('Resultado ABAJO '), write(FIN), nl,
                                                                    partida_terminada_ab(FIN, TAB, COL, ULTIMA_COL, CONECTA_X, TURNO).
 %Se comprueba si hay X iguales en la misma fila
 comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, TURNO, 1):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
@@ -103,7 +109,6 @@ comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, TURNO, 1):-   columnaAtPos(U
                                                                  contar_derecha(TAB, ULTIMA_COL, COL, FICHA, ALTURA,0,CONT_DER),
                                                                  SUM is CONT_IZQ+CONT_DER+1,   %+1 POR LA QUE ACABAS DE METER
                                                                  RES is CONECTA_X-SUM,
-                                                                 write('Resultado LATERAL '), write(RES), nl,
                                                                  partida_terminada_lat(RES,TAB, COL, ULTIMA_COL, CONECTA_X, TURNO).
 %Se comprueba si hay X iguales en las diagonales
 comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, TURNO, 2):-   columnaAtPos(ULTIMA_COL, TAB, COLUMNA_ACTUAL),
@@ -118,7 +123,6 @@ comprobar_victoria(TAB, COL, ULTIMA_COL, CONECTA_X, TURNO, 2):-   columnaAtPos(U
                                                                  RES_DIAG1 is CONECTA_X-SUM_DIAG_1,
                                                                  RES_DIAG2 is CONECTA_X-SUM_DIAG_2,
                                                                  RES is min(RES_DIAG1, RES_DIAG2),
-                                                                 write(RES), nl,
                                                                  partida_terminada_diag(RES,TAB, COL, ULTIMA_COL, CONECTA_X, TURNO).
 
 %PARA ESTRATEGIA AVANZADA
@@ -134,24 +138,20 @@ calcular_max_seguidas(TAB, COL_SEL, COL, MAX):-  columnaAtPos(COL_SEL, TAB, COLU
                                             contar_diag_abajo_der(TAB, COL_SEL, COL, FICHA, ALTURA, 0, CONT_ABD),
                                             SUM_AB is CONT_AB+1,
                                             SUM_LAT is CONT_IZQ+CONT_DER+1,
-                                            write(CONT_IZQ), nl,
-                                            write(CONT_DER), nl,
                                             SUM_DIAG_1 is CONT_ARI+CONT_ABD+1,
-                                            write(SUM_DIAG_1), nl,
                                             SUM_DIAG_2 is CONT_ARD+CONT_ABI+1,
-                                            write(SUM_DIAG_2), nl,
                                             MAX1 is max(SUM_LAT, SUM_AB),
                                             MAX2 is max(SUM_DIAG_1, SUM_DIAG_2),
                                             MAX is max(MAX1, MAX2).
-                                            
+
 contar_abajo(_,_,1,INI,CONT):- CONT is INI.
 contar_abajo(FICHA, COLUMNA_ACTUAL, ALTURA, INI, CONT):- ALTURA_SIGUIENTE is ALTURA-1,
                                                          elem_at_pos(ALTURA_SIGUIENTE, COLUMNA_ACTUAL, FICHA),
                                                          INI1 is INI+1,
                                                          contar_abajo(FICHA, COLUMNA_ACTUAL, ALTURA_SIGUIENTE, INI1, CONT).
 contar_abajo(_,_,_,INI, CONT):- CONT is INI.
-                                            
-                                            
+
+
 %Preficados para comprobar la columna
 mirar_abajo(_,_,_,1,FIN):- FIN is 0.
 mirar_abajo(FICHA, COLUMNA_ACTUAL, ALTURA, CONECTAR, FIN):- ALTURA_SIGUIENTE is ALTURA-1,
@@ -289,13 +289,13 @@ definir_jugadores(1,J1,J2,E1,E2):- write('Modo de jugador humano vs jugador huma
 definir_jugadores(2,J1,J2,E1,E2):- write('Introduce el nombre del jugador humano'), nl,
                                   read(J1), nl,
                                   E1 is 0,
-                                  atom_string(J2,'PC Bueno'),
+                                  atom_string(J2,'PC Antonio'),
                                   write('Tu PC rival es '), write(J2), nl,
                                   definir_estrategia_PC(J2, E2).
 
 %Modo 3: PC vs PC: Pregunta por las estrategias de ambos
-definir_jugadores(3,J1,J2,E1,E2):- atom_string(J1,'PC Bueno'),
-                                   atom_string(J2,'PC Buenaga'),
+definir_jugadores(3,J1,J2,E1,E2):- atom_string(J1,'PC Juan'),
+                                   atom_string(J2,'PC Antonio'),
                                    write('Van a enfrentarse los PCs '), write(J1), write(' y '), write(J2), nl,
                                    definir_estrategia_PC(J1,E1),
                                    definir_estrategia_PC(J2,E2).
@@ -350,7 +350,7 @@ simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
                                                not(columnaLlena(COL_SELECT,1)),
                                                insertar_ficha(TURNO, COL_ALEATORIA, TAB, TABRES),
                                                comprobar_victoria(TABRES, COL, COL_ALEATORIA, CONECTA_X, TURNO, 0),
-                                               write('Turno simulado'),nl,
+                                               write('Turno simulado simple'),nl,
                                                imprimir_turno(TURNO, J1, J2), nl,
                                                escribir_indices(1,COL),
                                                escribir_tablero(TABRES, ROW, COL), nl,
@@ -362,41 +362,15 @@ simular_jugada_simple(TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X):-
 
 
 %Cuando ya se han comparado todas las alternativas, se inserta en la mejor
-simular_jugada_avanzada(0, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, CONSECUTIVAS):-
+simular_jugada_avanzada(0, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, _):-
+     write('Turno simulado avanzado'),nl,
+     imprimir_turno(TURNO, J1, J2), nl,
      insertar_ficha(TURNO, MEJOR_COL, TAB, TABRES),
-     write('INSERTADO EN COLUMNA '), write(MEJOR_COL), write(' PERMITE SEGUIDAS '), writeln(CONSECUTIVAS),
+     comprobar_victoria(TABRES, COL, MEJOR_COL, CONECTA_X, TURNO, 0),
      escribir_indices(1,COL),
      escribir_tablero(TAB, ROW, COL), nl,
      TURNO_SIG is TURNO + 1,
      turno(TURNO_SIG, TABRES, J1, J2, EAUX, E, COL, ROW, CONECTA_X).
-     
-%Cuando se encuentra la posicion ganadora, el jugador gana
-simular_jugada_avanzada(COL_ACTUAL, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, _, _):-
-     columnaAtPos(COL_ACTUAL, TAB, COL_SELECT),
-     not(columnaLlena(COL_SELECT,1)),
-     insertar_ficha(TURNO, COL_ACTUAL, TAB, TAB_PRUEBA),
-     comprobar_victoria(TAB_PRUEBA, COL, COL_ACTUAL, CONECTA_X, TURNO, 0),
-     es_ganador(TURNO),
-     escribir_indices(1,COL),
-     escribir_tablero(TAB, ROW, COL), nl,
-     writeln('HA ENCONTRADO PARA GANAR'), write('EN COLUMNA NUMERO '), writeln(COL_ACTUAL),
-     TURNO_SIG is TURNO + 1,
-     turno(TURNO_SIG, TAB_PRUEBA, J1, J2, EAUX, E, COL, ROW, CONECTA_X).
-
-%Cuando se encuentra que es la posicion ganadora para el rival
-simular_jugada_avanzada(COL_ACTUAL, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR):-
-     columnaAtPos(COL_ACTUAL, TAB, COL_SELECT),
-     not(columnaLlena(COL_SELECT,1)),
-     TURNO_RIVAL is (TURNO + 1) mod 2, %Para que piense que somos el rival
-     insertar_ficha(TURNO_RIVAL, COL_ACTUAL, TAB, TAB_PRUEBA),
-     comprobar_victoria(TAB_PRUEBA, COL, COL_ACTUAL, CONECTA_X, TURNO_RIVAL, 0),
-     es_ganador(TURNO_RIVAL),
-     writeln('HA ENCONTRADO PARA TAPAR JUGADA DEL RIVAL'), write('EN COLUMNA NUMERO '), writeln(COL_ACTUAL),
-     no_ganador(TURNO_RIVAL), %Quitamos que sea ganador, ya que era temporal
-     MEJOR_COL is COL_ACTUAL,
-     MEJOR_VALOR is CONECTA_X, %Maxima prioridad a esta columna, ya que nos haría perder
-     COL_SIG is COL_ACTUAL - 1,
-     simular_jugada_avanzada(COL_SIG, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR).
 
 %Caso general, no se gana ni se pierde, se busca encadenar el numero maximo posible de fichas
 simular_jugada_avanzada(COL_ACTUAL, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR):-
@@ -404,25 +378,24 @@ simular_jugada_avanzada(COL_ACTUAL, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONEC
      not(columnaLlena(COL_SELECT,1)),
      insertar_ficha(TURNO, COL_ACTUAL, TAB, TAB_PRUEBA),
      calcular_max_seguidas(TAB_PRUEBA, COL_ACTUAL, COL, CONSECUTIVAS),
-     write('COLUMNA NUMERO '), write(COL_ACTUAL), write(' PERMITE SEGUIDAS '), writeln(CONSECUTIVAS),
-     actualizar_mejor_col(MEJOR_COL, MEJOR_VALOR, COL_ACTUAL, CONSECUTIVAS),
+     actualizar_mejor_col(MEJOR_COL, MEJOR_VALOR, COL_ACTUAL, CONSECUTIVAS, NUEVO_MEJOR_COL, NUEVO_MEJOR_VALOR),
      COL_SIG is COL_ACTUAL - 1,
-     simular_jugada_avanzada(COL_SIG, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR).
-     
+     simular_jugada_avanzada(COL_SIG, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, NUEVO_MEJOR_COL, NUEVO_MEJOR_VALOR).
+
 %Si esa columna esta llena, pasa a la siguiente
 simular_jugada_avanzada(COL_ACTUAL, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR):-
      columnaAtPos(COL_ACTUAL, TAB, COL_SELECT),
      columnaLlena(COL_SELECT,1),
-     write('COLUMNA NUMERO '), write(COL_ACTUAL), writeln(' LLENA '),
      COL_SIG is COL_ACTUAL - 1,
      simular_jugada_avanzada(COL_SIG, TURNO, TAB, J1, J2, E, EAUX, COL, ROW, CONECTA_X, MEJOR_COL, MEJOR_VALOR).
-     
-actualizar_mejor_col(MEJOR_COL, MEJOR_VALOR, COL_ACTUAL, CONSECUTIVAS):-
-     CONSECUTIVAS > MEJOR_VALOR,
-     MEJOR_COL is COL_ACTUAL,
-     MEJOR_VALOR is CONSECUTIVAS.
-actualizar_mejor_col(_, _, _, _).
 
+actualizar_mejor_col(_, MEJOR_VALOR, COL_ACTUAL, CONSECUTIVAS, NUEVO_MEJOR_COL, NUEVO_MEJOR_VALOR):-
+     CONSECUTIVAS > MEJOR_VALOR,
+     NUEVO_MEJOR_COL is COL_ACTUAL,
+     NUEVO_MEJOR_VALOR is CONSECUTIVAS.
+actualizar_mejor_col(MEJOR_COL, MEJOR_VALOR, _, _, NUEVO_MEJOR_COL, NUEVO_MEJOR_VALOR):-
+     NUEVO_MEJOR_COL is MEJOR_COL,
+     NUEVO_MEJOR_VALOR is MEJOR_VALOR.
 
 
 %Simboliza el turno de un humano (E = 0), se imprime el tablero y se pregunta jugada
@@ -454,17 +427,24 @@ turno(TURNO, TAB, J1, J2, 2, EAUX, COL, ROW, CONECTA_X):-   not(tablero_lleno(TA
 %Turno con el tablero lleno, fin del juego
 turno(TURNO, TAB, _, _, _, _, COL, ROW, _):-   tablero_lleno(TAB, COL, ROW),
                                                 ganador(-1),
-                                                       write('El tablero, se ha llenado, el juego ha acabado en EMPATE tras '), write(TURNO), write(' jugadas.'), nl,
+                                                       registrar_resultados(),nl,
+                                                       write('El tablero, se ha llenado, el juego ha acabado en EMPATE tras '), write(TURNO), write(' jugadas.'), nl,told(),
                                                        write('Otra partida?'), nl.
 
 %Turno con victoria, fin del juego
-turno(_, _, J1, _, _, _, _, _, _):-
+turno(_, TAB, J1, _, _, _, COL, ROW, _):-
     ganador(0),
-    write('Fin de la partida! Ha ganado '), write(J1).
+    escribir_indices(1,COL),
+    escribir_tablero(TAB, ROW, COL), nl,
+    registrar_resultados(),nl,
+    write('Fin de la partida! Ha ganado '), write(J1),nl,told().
 
 %Turno con victoria, fin del juego
-turno(_, _, _, J2, _, _, _, _, _):-
-    write('Fin de la partida! Ha ganado '), write(J2).
+turno(_, TAB, _, J2, _, _, COL, ROW, _):-
+    escribir_indices(1,COL),
+    escribir_tablero(TAB, ROW, COL), nl,
+    registrar_resultados(),nl,
+    write('Fin de la partida! Ha ganado '), write(J2),nl,told().
 
 
 %Establece el juego (jugadores y tablero) y empieza el juego
@@ -485,3 +465,6 @@ jugar():-
     escribir_tablero(TAB, ROW,COL),
     write('Comienza el juego entre '), write(J1), write(' y '), write(J2), nl,
     turno(0, TAB, J1, J2, E1, E2, COL, ROW, CONECTA_X). %Turno inicial para el jugador 0
+
+registrar_resultados().%:- append('C:/SW/output.txt').
+
