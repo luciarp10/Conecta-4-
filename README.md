@@ -1,4 +1,3 @@
 # CRA_PL1
-Práctica 1 Conocimiento y Razonamiento Automatizado. Conecta - 4 
-Desarrollo de la práctica 1 de laboratorio. 
-Contenido: 
+Conecta - 4 
+Juego desarrollado en Prolog. Permite jugar individual contra la CPU, CPU vs CPU y dos jugadores. Para jugar contra la CPU se puede seleccionar nivel de dificultad. 
